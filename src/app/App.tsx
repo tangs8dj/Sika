@@ -153,7 +153,7 @@ export function App() {
         onExportPptx={handlePptx}
         onRestoreDefaults={() => {
           restoreDefaultSettings();
-          showToast({ kind: 'success', message: '已恢复默认样式和 A4 横向页面。' });
+          showToast({ kind: 'success', message: '已恢复默认样式和 A4 纵向页面。' });
         }}
       />
       <div className="workspace">
