@@ -52,7 +52,7 @@ export function StyleSettingsPanel() {
           <input
             type="range"
             min="12"
-            max="160"
+            max="260"
             step="1"
             value={style.fontSizePt}
             onChange={(event) => update({ fontSizePt: Number(event.target.value) })}
