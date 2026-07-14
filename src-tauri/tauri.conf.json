@@ -49,7 +49,7 @@
         "startMenuFolder": "Sika_whyu"
       },
       "wix": {
-        "language": ["zh-CN", "en-US"]
+        "language": ["zh-CN"]
       }
     }
   }
