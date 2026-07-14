@@ -54,7 +54,7 @@ function parsePageSettings(value: unknown): PageSettings {
     Number.isFinite(legacyRightMargin)
       ? (legacyLeftMargin + legacyRightMargin) / 2
       : DEFAULT_PAGE_SETTINGS.marginHorizontalMm;
-  const candidate = {
+  const candidate: PageSettings = {
     ...DEFAULT_PAGE_SETTINGS,
     ...value,
     marginHorizontalMm:
