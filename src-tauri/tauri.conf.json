@@ -1,6 +1,6 @@
 {
   "$schema": "../node_modules/@tauri-apps/cli/config.schema.json",
-  "productName": "席卡生成 - Whyu",
+  "productName": "Sika_whyu",
   "mainBinaryName": "Sika",
   "version": "0.1.2",
   "identifier": "com.localtools.batchplacecardgenerator",
@@ -14,7 +14,7 @@
     "windows": [
       {
         "label": "main",
-        "title": "席卡生成 - Whyu",
+        "title": "Sika_whyu",
         "width": 1360,
         "height": 860,
         "minWidth": 1100,
@@ -46,7 +46,7 @@
       },
       "nsis": {
         "installMode": "currentUser",
-        "startMenuFolder": "席卡生成 - Whyu"
+        "startMenuFolder": "Sika_whyu"
       },
       "wix": {
         "language": ["zh-CN", "en-US"]
