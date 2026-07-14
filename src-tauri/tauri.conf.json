@@ -33,7 +33,7 @@
   },
   "bundle": {
     "active": true,
-    "targets": ["nsis", "msi"],
+    "targets": "all",
     "category": "Productivity",
     "shortDescription": "批量生成、打印并导出会议席卡",
     "longDescription": "离线批量席卡生成器，支持实时预览、直接打印以及 Word 和 PowerPoint 导出。",
