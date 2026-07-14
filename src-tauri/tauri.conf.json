@@ -2,7 +2,7 @@
   "$schema": "../node_modules/@tauri-apps/cli/config.schema.json",
   "productName": "席卡生成 - Whyu",
   "mainBinaryName": "batch-place-card-generator",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "identifier": "com.localtools.batchplacecardgenerator",
   "build": {
     "frontendDist": "../dist",
