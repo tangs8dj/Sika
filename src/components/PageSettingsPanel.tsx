@@ -1,4 +1,5 @@
 import { FileOutput, FoldHorizontal, LayoutTemplate } from 'lucide-react';
+import { InputNumber, Select, Switch } from '@arco-design/web-react';
 import type { LayoutMode, Orientation, PaperPreset } from '../features/layout/sceneTypes';
 import { useProjectStore } from '../store/useProjectStore';
 import { isValidHexColor } from '../utils/validation';
@@ -21,17 +22,15 @@ function NumberField({ label, value, min = 0, max, step = 1, onChange }: NumberF
   return (
     <label className="field-group compact-field">
       <span className="field-label">{label}</span>
-      <div className="number-with-unit">
-        <input
-          type="number"
-          min={min}
-          max={max}
-          step={step}
-          value={value}
-          onChange={(event) => onChange(numeric(event.target.value, value))}
-        />
-        <span>mm</span>
-      </div>
+      <InputNumber
+        className="number-field"
+        min={min}
+        max={max}
+        step={step}
+        value={value}
+        suffix="mm"
+        onChange={(nextValue) => onChange(numeric(String(nextValue), value))}
+      />
     </label>
   );
 }
@@ -54,28 +53,34 @@ export function PageSettingsPanel() {
         </div>
 
         <div className="two-column-fields">
-          <label className="field-group">
+          <div className="field-group">
             <span className="field-label">纸张</span>
-            <select
+            <Select
+              aria-label="纸张"
               value={settings.paperPreset}
-              onChange={(event) => setPaperPreset(event.target.value as PaperPreset)}
-            >
-              <option value="A4">A4</option>
-              <option value="A3">A3</option>
-              <option value="LETTER">Letter</option>
-              <option value="CUSTOM">自定义</option>
-            </select>
-          </label>
-          <label className="field-group">
+              onChange={(paperPreset) => setPaperPreset(paperPreset as PaperPreset)}
+              options={[
+                { value: 'A4', label: 'A4' },
+                { value: 'A3', label: 'A3' },
+                { value: 'LETTER', label: 'Letter' },
+                { value: 'CUSTOM', label: '自定义' }
+              ]}
+              triggerProps={{ autoAlignPopupWidth: true }}
+            />
+          </div>
+          <div className="field-group">
             <span className="field-label">方向</span>
-            <select
+            <Select
+              aria-label="方向"
               value={settings.orientation}
-              onChange={(event) => setOrientation(event.target.value as Orientation)}
-            >
-              <option value="landscape">横向</option>
-              <option value="portrait">纵向</option>
-            </select>
-          </label>
+              onChange={(orientation) => setOrientation(orientation as Orientation)}
+              options={[
+                { value: 'landscape', label: '横向' },
+                { value: 'portrait', label: '纵向' }
+              ]}
+              triggerProps={{ autoAlignPopupWidth: true }}
+            />
+          </div>
         </div>
 
         {settings.paperPreset === 'CUSTOM' && (
@@ -86,7 +91,7 @@ export function PageSettingsPanel() {
               min={30}
               max={1000}
               step={0.1}
-              onChange={(widthMm) => update({ widthMm })}
+              onChange={(widthMm) => update({ widthMm, previewZoomMode: 'fit' })}
             />
             <NumberField
               label="高度"
@@ -94,7 +99,7 @@ export function PageSettingsPanel() {
               min={30}
               max={1000}
               step={0.1}
-              onChange={(heightMm) => update({ heightMm })}
+              onChange={(heightMm) => update({ heightMm, previewZoomMode: 'fit' })}
             />
           </div>
         )}
@@ -106,29 +111,22 @@ export function PageSettingsPanel() {
               label="上"
               value={settings.marginTopMm}
               max={100}
-              step={0.5}
+              step={1}
               onChange={(marginTopMm) => update({ marginTopMm })}
             />
             <NumberField
-              label="右"
-              value={settings.marginRightMm}
+              label="左右"
+              value={settings.marginHorizontalMm}
               max={100}
-              step={0.5}
-              onChange={(marginRightMm) => update({ marginRightMm })}
+              step={1}
+              onChange={(marginHorizontalMm) => update({ marginHorizontalMm })}
             />
             <NumberField
               label="下"
               value={settings.marginBottomMm}
               max={100}
-              step={0.5}
+              step={1}
               onChange={(marginBottomMm) => update({ marginBottomMm })}
-            />
-            <NumberField
-              label="左"
-              value={settings.marginLeftMm}
-              max={100}
-              step={0.5}
-              onChange={(marginLeftMm) => update({ marginLeftMm })}
             />
           </div>
         </div>
@@ -162,10 +160,9 @@ export function PageSettingsPanel() {
                 <strong>预览折叠线</strong>
                 <small>仅作为排版辅助线</small>
               </span>
-              <input
-                type="checkbox"
+              <Switch
                 checked={settings.showFoldLine}
-                onChange={(event) => update({ showFoldLine: event.target.checked })}
+                onChange={(showFoldLine) => update({ showFoldLine })}
               />
             </label>
             <label className="switch-row">
@@ -173,11 +170,9 @@ export function PageSettingsPanel() {
                 <strong>实际打印折叠线</strong>
                 <small>导出和打印浅灰色虚线</small>
               </span>
-              <input
-                type="checkbox"
+              <Switch
                 checked={settings.printFoldLine}
-                disabled={!settings.showFoldLine}
-                onChange={(event) => update({ printFoldLine: event.target.checked })}
+                onChange={(printFoldLine) => update({ printFoldLine })}
               />
             </label>
           </>
@@ -188,10 +183,9 @@ export function PageSettingsPanel() {
             <strong>显示外边框</strong>
             <small>边框会进入打印和导出文件</small>
           </span>
-          <input
-            type="checkbox"
+          <Switch
             checked={settings.showBorder}
-            onChange={(event) => update({ showBorder: event.target.checked })}
+            onChange={(showBorder) => update({ showBorder })}
           />
         </label>
         <label className="switch-row">
@@ -199,10 +193,9 @@ export function PageSettingsPanel() {
             <strong>显示安全区域</strong>
             <small>蓝色虚线只在预览中显示</small>
           </span>
-          <input
-            type="checkbox"
+          <Switch
             checked={settings.showSafeArea}
-            onChange={(event) => update({ showSafeArea: event.target.checked })}
+            onChange={(showSafeArea) => update({ showSafeArea })}
           />
         </label>
 

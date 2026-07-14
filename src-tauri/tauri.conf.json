@@ -1,6 +1,6 @@
 {
   "$schema": "../node_modules/@tauri-apps/cli/config.schema.json",
-  "productName": "批量席卡生成器",
+  "productName": "席卡生成 - Whyu",
   "mainBinaryName": "batch-place-card-generator",
   "version": "0.1.0",
   "identifier": "com.localtools.batchplacecardgenerator",
@@ -14,7 +14,7 @@
     "windows": [
       {
         "label": "main",
-        "title": "批量席卡生成器",
+        "title": "席卡生成 - Whyu",
         "width": 1360,
         "height": 860,
         "minWidth": 1100,
@@ -46,7 +46,7 @@
       },
       "nsis": {
         "installMode": "currentUser",
-        "startMenuFolder": "批量席卡生成器"
+        "startMenuFolder": "席卡生成 - Whyu"
       },
       "wix": {
         "language": ["zh-CN", "en-US"]

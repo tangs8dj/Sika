@@ -1,4 +1,5 @@
-import { AlignCenter, AlignLeft, AlignRight, Palette, Type } from 'lucide-react';
+import { AlignCenter, AlignJustify, AlignLeft, AlignRight, Palette, Type } from 'lucide-react';
+import { Select } from '@arco-design/web-react';
 import { useProjectStore } from '../store/useProjectStore';
 import { isValidHexColor } from '../utils/validation';
 import type { HorizontalAlign } from '../features/layout/sceneTypes';
@@ -15,6 +16,7 @@ export function StyleSettingsPanel() {
   const colorValid = isValidHexColor(style.color);
 
   const alignments: Array<{ value: HorizontalAlign; label: string; icon: typeof AlignLeft }> = [
+    { value: 'justify', label: '分散对齐', icon: AlignJustify },
     { value: 'left', label: '左对齐', icon: AlignLeft },
     { value: 'center', label: '居中', icon: AlignCenter },
     { value: 'right', label: '右对齐', icon: AlignRight }
@@ -24,23 +26,25 @@ export function StyleSettingsPanel() {
     <section className="settings-section">
       <div className="section-title">
         <Type size={17} />
-        <h3>姓名样式</h3>
+        <h3>样式</h3>
       </div>
 
-      <label className="field-group">
+      <div className="field-group">
         <span className="field-label">字体</span>
-        <select
+        <Select
+          showSearch
           value={style.fontFamily}
-          onChange={(event) => update({ fontFamily: event.target.value })}
+          onChange={(fontFamily) => update({ fontFamily: String(fontFamily) })}
           style={{ fontFamily: style.fontFamily }}
+          placeholder="搜索系统字体"
         >
           {fonts.map((font) => (
-            <option key={font} value={font} style={{ fontFamily: font }}>
+            <Select.Option key={font} value={font} style={{ fontFamily: font }}>
               {font}
-            </option>
+            </Select.Option>
           ))}
-        </select>
-      </label>
+        </Select>
+      </div>
 
       <div className="field-group">
         <span className="field-label">字号</span>
@@ -91,18 +95,21 @@ export function StyleSettingsPanel() {
       </div>
 
       <div className="two-column-fields">
-        <label className="field-group">
+        <div className="field-group">
           <span className="field-label">字重</span>
-          <select
+          <Select
+            aria-label="字重"
             value={style.fontWeight}
-            onChange={(event) =>
-              update({ fontWeight: event.target.value === 'bold' ? 'bold' : 'normal' })
+            onChange={(fontWeight) =>
+              update({ fontWeight: fontWeight === 'bold' ? 'bold' : 'normal' })
             }
-          >
-            <option value="normal">常规</option>
-            <option value="bold">加粗</option>
-          </select>
-        </label>
+            options={[
+              { value: 'normal', label: '常规' },
+              { value: 'bold', label: '加粗' }
+            ]}
+            triggerProps={{ autoAlignPopupWidth: true }}
+          />
+        </div>
         <label className="field-group">
           <span className="field-label">字间距</span>
           <div className="number-with-unit">
@@ -124,7 +131,7 @@ export function StyleSettingsPanel() {
       </div>
 
       <div className="field-group">
-        <span className="field-label">水平对齐</span>
+        <span className="field-label">文本框对齐</span>
         <div className="segmented-control" role="group" aria-label="姓名水平对齐">
           {alignments.map(({ value, label, icon: Icon }) => (
             <button
@@ -172,17 +179,20 @@ export function StyleSettingsPanel() {
             <span>pt</span>
           </div>
         </label>
-        <label className="field-group">
+        <div className="field-group">
           <span className="field-label">最多行数</span>
-          <select
+          <Select
+            aria-label="最多行数"
             value={style.maxLines}
             disabled={!style.autoFit}
-            onChange={(event) => update({ maxLines: event.target.value === '1' ? 1 : 2 })}
-          >
-            <option value="1">1 行</option>
-            <option value="2">2 行</option>
-          </select>
-        </label>
+            onChange={(maxLines) => update({ maxLines: maxLines === 1 ? 1 : 2 })}
+            options={[
+              { value: 1, label: '1 行' },
+              { value: 2, label: '2 行' }
+            ]}
+            triggerProps={{ autoAlignPopupWidth: true }}
+          />
+        </div>
       </div>
     </section>
   );

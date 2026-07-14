@@ -12,13 +12,21 @@ describe('输入校验', () => {
   it('拒绝超过纸张尺寸的页边距', () => {
     const errors = validatePageSettings({
       ...DEFAULT_PAGE_SETTINGS,
-      marginLeftMm: 160,
-      marginRightMm: 160
+      marginHorizontalMm: 160
     });
     expect(errors.some((error) => error.includes('左右页边距'))).toBe(true);
   });
 
   it('拒绝非正数自定义纸张', () => {
     expect(validatePageSettings({ ...DEFAULT_PAGE_SETTINGS, widthMm: 0 })).not.toHaveLength(0);
+  });
+
+  it('拒绝超过折叠半页高度的单侧页边距', () => {
+    const errors = validatePageSettings({
+      ...DEFAULT_PAGE_SETTINGS,
+      marginTopMm: 105,
+      marginBottomMm: 45
+    });
+    expect(errors.some((error) => error.includes('分别小于半页高度'))).toBe(true);
   });
 });

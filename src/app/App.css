@@ -24,6 +24,13 @@
   --danger: #c63745;
   --success: #16845b;
   --shadow: 0 10px 28px rgba(23, 32, 51, 0.08);
+  --color-primary-1: #edf1ff;
+  --color-primary-2: #dbe3ff;
+  --color-primary-3: #becdff;
+  --color-primary-4: #92adff;
+  --color-primary-5: #5f7aea;
+  --color-primary-6: #3157d5;
+  --color-primary-7: #2444b4;
 }
 
 * {
@@ -125,6 +132,12 @@ select:focus-visible {
   display: flex;
   align-items: center;
   gap: 8px;
+}
+
+.toolbar-actions .arco-btn {
+  min-height: 36px;
+  border-radius: 9px;
+  font-weight: 650;
 }
 
 .button {
@@ -604,6 +617,15 @@ select:focus-visible {
   margin-bottom: 12px;
 }
 
+.field-group .arco-select,
+.field-group .arco-input-number {
+  width: 100%;
+}
+
+.field-group .arco-input-number {
+  min-width: 0;
+}
+
 .field-group:last-child {
   margin-bottom: 0;
 }
@@ -703,7 +725,7 @@ input.invalid {
 
 .segmented-control {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(4, 1fr);
   overflow: hidden;
   border: 1px solid var(--border-strong);
   border-radius: 8px;
@@ -737,6 +759,12 @@ input.invalid {
   color: var(--primary);
   background: white;
   box-shadow: 0 1px 4px rgba(23, 32, 51, 0.1);
+}
+
+.field-hint {
+  margin-top: 5px;
+  color: var(--text-muted);
+  font-size: 10px;
 }
 
 .switch-row {
@@ -775,7 +803,7 @@ input.invalid {
 
 .margin-grid {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 5px;
 }
 
@@ -789,8 +817,10 @@ input.invalid {
   font-size: 9px;
 }
 
-.margin-grid .number-with-unit span {
-  display: none;
+.margin-grid .number-field .arco-input-number-suffix {
+  margin-right: 5px;
+  color: #8a94a5;
+  font-size: 10px;
 }
 
 .output-settings {

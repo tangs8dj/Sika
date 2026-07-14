@@ -33,7 +33,7 @@ export async function createPptxBytes(
   const heightIn = mmToInch(pageSettings.heightMm);
   pptx.defineLayout({ name: layoutName, width: widthIn, height: heightIn });
   pptx.layout = layoutName;
-  pptx.author = '批量席卡生成器';
+  pptx.author = '席卡生成 - Whyu';
   pptx.company = 'Local Tools';
   pptx.subject = '批量席卡';
   pptx.title = '批量席卡';

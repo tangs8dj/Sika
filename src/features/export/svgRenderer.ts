@@ -1,4 +1,5 @@
 import { ptToMm, round } from '../../utils/units';
+import { defaultTextMeasurer } from '../layout/autoFitText';
 import type { LayoutScene, LineNode, RectangleNode, TextNode } from '../layout/sceneTypes';
 
 export interface SvgRenderOptions {
@@ -30,13 +31,39 @@ function renderLine(node: LineNode): string {
   return `<line id="${escapeXml(node.id)}" x1="${round(node.x1Mm)}" y1="${round(node.y1Mm)}" x2="${round(node.x2Mm)}" y2="${round(node.y2Mm)}" stroke="${escapeXml(node.strokeColor)}" stroke-width="${round(node.strokeWidthMm)}"${dashArrayValue(node.dashArray)} />`;
 }
 
+function renderJustifiedLine(node: TextNode, line: string, y: number): string {
+  const glyphs = Array.from(line);
+  if (glyphs.length < 2) {
+    return `<tspan x="${round(node.xMm)}" y="${round(y)}">${escapeXml(line)}</tspan>`;
+  }
+
+  const widths = glyphs.map((glyph) =>
+    defaultTextMeasurer(glyph, node.fontSizePt, node.fontFamily, node.fontWeight, 0)
+  );
+  const totalWidth = widths.reduce((sum, width) => sum + width, 0);
+  const gap = (node.widthMm - totalWidth) / (glyphs.length - 1);
+  let x = node.xMm;
+
+  return glyphs
+    .map((glyph, index) => {
+      const glyphX = x;
+      x += (widths[index] ?? 0) + gap;
+      return `<tspan x="${round(glyphX)}" y="${round(y)}">${escapeXml(glyph)}</tspan>`;
+    })
+    .join('');
+}
+
 function renderText(node: TextNode): string {
   const centerX = node.xMm + node.widthMm / 2;
   const centerY = node.yMm + node.heightMm / 2;
   const anchor =
-    node.textAlign === 'left' ? 'start' : node.textAlign === 'right' ? 'end' : 'middle';
+    node.textAlign === 'left' || node.textAlign === 'justify'
+      ? 'start'
+      : node.textAlign === 'right'
+        ? 'end'
+        : 'middle';
   const x =
-    node.textAlign === 'left'
+    node.textAlign === 'left' || node.textAlign === 'justify'
       ? node.xMm
       : node.textAlign === 'right'
         ? node.xMm + node.widthMm
@@ -48,19 +75,23 @@ function renderText(node: TextNode): string {
       ? ''
       : ` transform="rotate(${node.rotationDeg} ${round(centerX)} ${round(centerY)})"`;
   const tspans = node.lines
-    .map(
-      (line, index) =>
-        `<tspan x="${round(x)}" y="${round(firstY + index * lineHeightMm)}">${escapeXml(line)}</tspan>`
-    )
+    .map((line, index) => {
+      const y = firstY + index * lineHeightMm;
+      return node.textAlign === 'justify'
+        ? renderJustifiedLine(node, line, y)
+        : `<tspan x="${round(x)}" y="${round(y)}">${escapeXml(line)}</tspan>`;
+    })
     .join('');
 
-  return `<text id="${escapeXml(node.id)}" text-anchor="${anchor}" dominant-baseline="central" font-family="${escapeXml(node.fontFamily)}" font-size="${round(ptToMm(node.fontSizePt))}" font-weight="${node.fontWeight === 'bold' ? '700' : '400'}" letter-spacing="${round(ptToMm(node.letterSpacingPt))}" fill="${escapeXml(node.color)}"${transform}>${tspans}</text>`;
+  const letterSpacing = node.textAlign === 'justify' ? 0 : node.letterSpacingPt;
+
+  return `<text id="${escapeXml(node.id)}" text-anchor="${anchor}" dominant-baseline="central" font-family="${escapeXml(node.fontFamily)}" font-size="${round(ptToMm(node.fontSizePt))}" font-weight="${node.fontWeight === 'bold' ? '700' : '400'}" letter-spacing="${round(ptToMm(letterSpacing))}" fill="${escapeXml(node.color)}"${transform}>${tspans}</text>`;
 }
 
 export function renderSceneToSvg(scene: LayoutScene, options: SvgRenderOptions = {}): string {
   const includeGuides = options.includeGuides ?? false;
   const nodes = scene.nodes
-    .filter((node) => includeGuides || node.printable)
+    .filter((node) => (includeGuides ? node.previewable !== false : node.printable))
     .map((node) => {
       switch (node.type) {
         case 'rectangle':

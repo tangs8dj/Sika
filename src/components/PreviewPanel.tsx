@@ -1,8 +1,11 @@
-import { useMemo } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { ChevronLeft, ChevronRight, Maximize2, ZoomIn, ZoomOut } from 'lucide-react';
 import { createPlaceCardScene } from '../features/layout/layoutEngine';
 import { ScenePreview } from '../features/preview/ScenePreview';
 import { useProjectStore } from '../store/useProjectStore';
+import { mmToPx } from '../utils/units';
+
+const PREVIEW_CANVAS_PADDING_PX = 56;
 
 export function PreviewPanel() {
   const people = useProjectStore((state) => state.people);
@@ -11,6 +14,8 @@ export function PreviewPanel() {
   const pageSettings = useProjectStore((state) => state.pageSettings);
   const selectPerson = useProjectStore((state) => state.selectPerson);
   const updatePageSettings = useProjectStore((state) => state.updatePageSettings);
+  const canvasRef = useRef<HTMLDivElement>(null);
+  const [canvasSize, setCanvasSize] = useState({ width: 0, height: 0 });
 
   const selectedIndex = Math.max(
     0,
@@ -21,6 +26,31 @@ export function PreviewPanel() {
     () => (person ? createPlaceCardScene(person.name, textStyle, pageSettings) : null),
     [pageSettings, person, textStyle]
   );
+  const fittedZoom = useMemo(() => {
+    const availableWidth = canvasSize.width - PREVIEW_CANVAS_PADDING_PX;
+    const availableHeight = canvasSize.height - PREVIEW_CANVAS_PADDING_PX;
+    if (availableWidth <= 0 || availableHeight <= 0) return pageSettings.previewZoom;
+    return Math.min(
+      availableWidth / mmToPx(pageSettings.widthMm),
+      availableHeight / mmToPx(pageSettings.heightMm)
+    );
+  }, [canvasSize, pageSettings.heightMm, pageSettings.previewZoom, pageSettings.widthMm]);
+  const previewZoom = pageSettings.previewZoomMode === 'fit' ? fittedZoom : pageSettings.previewZoom;
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    const updateCanvasSize = () => {
+      setCanvasSize({ width: canvas.clientWidth, height: canvas.clientHeight });
+    };
+
+    updateCanvasSize();
+    if (typeof ResizeObserver === 'undefined') return;
+    const observer = new ResizeObserver(updateCanvasSize);
+    observer.observe(canvas);
+    return () => observer.disconnect();
+  }, []);
 
   const goTo = (index: number) => {
     const target = people[index];
@@ -28,8 +58,13 @@ export function PreviewPanel() {
   };
 
   const setZoom = (value: number) => {
-    updatePageSettings({ previewZoom: Math.min(1.4, Math.max(0.3, value)) });
+    updatePageSettings({
+      previewZoom: Math.min(2.4, Math.max(0.1, value)),
+      previewZoomMode: 'manual'
+    });
   };
+
+  const fitToWindow = () => updatePageSettings({ previewZoomMode: 'fit' });
 
   return (
     <main className="preview-panel" aria-label="席卡实时预览">
@@ -45,12 +80,12 @@ export function PreviewPanel() {
         </div>
       </div>
 
-      <div className="preview-canvas">
+      <div className="preview-canvas" ref={canvasRef}>
         {scene && person ? (
           <>
             <ScenePreview
               scene={scene}
-              zoom={pageSettings.previewZoom}
+              zoom={previewZoom}
               title={`${person.name}席卡`}
             />
             {scene.warnings.length > 0 && (
@@ -97,25 +132,25 @@ export function PreviewPanel() {
           <button
             type="button"
             className="icon-button"
-            onClick={() => setZoom(pageSettings.previewZoom - 0.1)}
+            onClick={() => setZoom(previewZoom - 0.1)}
             title="缩小"
           >
             <ZoomOut size={17} />
           </button>
           <input
             type="range"
-            min="0.3"
-            max="1.4"
+            min="0.1"
+            max="2.4"
             step="0.05"
-            value={pageSettings.previewZoom}
+            value={previewZoom}
             onChange={(event) => setZoom(Number(event.target.value))}
             aria-label="预览缩放比例"
           />
-          <span>{Math.round(pageSettings.previewZoom * 100)}%</span>
+          <span>{Math.round(previewZoom * 100)}%</span>
           <button
             type="button"
             className="icon-button"
-            onClick={() => setZoom(pageSettings.previewZoom + 0.1)}
+            onClick={() => setZoom(previewZoom + 0.1)}
             title="放大"
           >
             <ZoomIn size={17} />
@@ -123,7 +158,7 @@ export function PreviewPanel() {
           <button
             type="button"
             className="text-button"
-            onClick={() => setZoom(0.78)}
+            onClick={fitToWindow}
             title="适应窗口"
           >
             <Maximize2 size={15} /> 适应窗口

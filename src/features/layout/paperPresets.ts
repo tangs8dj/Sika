@@ -24,12 +24,12 @@ export const FALLBACK_FONTS = [
 
 export const DEFAULT_TEXT_STYLE: TextStyle = {
   fontFamily: 'Microsoft YaHei',
-  fontSizePt: 72,
+  fontSizePt: 120,
   minimumFontSizePt: 28,
   color: '#111827',
   fontWeight: 'bold',
   letterSpacingPt: 0,
-  horizontalAlign: 'center',
+  horizontalAlign: 'justify',
   verticalCenter: true,
   autoFit: true,
   maxLines: 2
@@ -40,17 +40,17 @@ export const DEFAULT_PAGE_SETTINGS: PageSettings = {
   widthMm: 297,
   heightMm: 210,
   orientation: 'landscape',
-  marginTopMm: 12,
-  marginRightMm: 16,
-  marginBottomMm: 12,
-  marginLeftMm: 16,
+  marginTopMm: 28,
+  marginHorizontalMm: 26,
+  marginBottomMm: 28,
   layoutMode: 'folded',
   showFoldLine: true,
   printFoldLine: false,
   showBorder: false,
   backgroundColor: '#ffffff',
   previewZoom: 0.78,
-  showSafeArea: false
+  previewZoomMode: 'fit',
+  showSafeArea: true
 };
 
 export function getOrientedDimensions(
@@ -77,6 +77,7 @@ export function applyPaperPreset(
   return {
     ...settings,
     paperPreset: preset,
+    previewZoomMode: 'fit',
     ...dimensions
   };
 }
@@ -90,6 +91,7 @@ export function applyOrientation(settings: PageSettings, orientation: Orientatio
     ...settings,
     orientation,
     widthMm: settings.heightMm,
-    heightMm: settings.widthMm
+    heightMm: settings.widthMm,
+    previewZoomMode: 'fit'
   };
 }

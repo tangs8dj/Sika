@@ -70,7 +70,7 @@ interface ProjectStoreState {
   showToast: (toast: ToastState | null) => void;
 }
 
-const starterPeople = namesToPeople(['张伟', '李娜', 'Alexander Chen']);
+const starterPeople = namesToPeople(['张伟', 'Alexander Chen']);
 const restored = loadPersistedProject();
 const initialPeople = restored?.people ?? starterPeople;
 

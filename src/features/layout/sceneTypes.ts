@@ -1,5 +1,6 @@
 export type FontWeight = 'normal' | 'bold';
-export type HorizontalAlign = 'left' | 'center' | 'right';
+export type HorizontalAlign = 'left' | 'center' | 'right' | 'justify';
+export type PreviewZoomMode = 'fit' | 'manual';
 export type Orientation = 'landscape' | 'portrait';
 export type LayoutMode = 'folded' | 'flat';
 export type PaperPreset = 'A4' | 'A3' | 'LETTER' | 'CUSTOM';
@@ -24,21 +25,22 @@ export interface PageSettings {
   heightMm: number;
   orientation: Orientation;
   marginTopMm: number;
-  marginRightMm: number;
+  marginHorizontalMm: number;
   marginBottomMm: number;
-  marginLeftMm: number;
   layoutMode: LayoutMode;
   showFoldLine: boolean;
   printFoldLine: boolean;
   showBorder: boolean;
   backgroundColor: string;
   previewZoom: number;
+  previewZoomMode: PreviewZoomMode;
   showSafeArea: boolean;
 }
 
 interface BaseSceneNode {
   id: string;
   printable: boolean;
+  previewable?: boolean;
 }
 
 export interface TextNode extends BaseSceneNode {

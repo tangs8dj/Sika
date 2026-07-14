@@ -10,10 +10,10 @@ function cleanupPrintDom(): void {
   if (root) root.replaceChildren();
 }
 
-export async function printScenes(
+export function printScenes(
   scenes: readonly LayoutScene[],
   settings: PageSettings
-): Promise<void> {
+): void {
   if (scenes.length === 0) {
     throw new Error('没有可打印的席卡。');
   }
@@ -60,12 +60,9 @@ export async function printScenes(
   root.append(fragment);
   document.body.classList.add('print-mode');
 
-  await new Promise<void>((resolve) =>
-    requestAnimationFrame(() => requestAnimationFrame(() => resolve()))
-  );
   try {
     window.print();
   } finally {
-    setTimeout(cleanupPrintDom, 0);
+    cleanupPrintDom();
   }
 }

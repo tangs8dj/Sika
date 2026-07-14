@@ -119,9 +119,9 @@ export async function createDocxBytes(
           size: pageSize,
           margin: {
             top: mmToTwip(pageSettings.marginTopMm),
-            right: mmToTwip(pageSettings.marginRightMm),
+            right: mmToTwip(pageSettings.marginHorizontalMm),
             bottom: mmToTwip(pageSettings.marginBottomMm),
-            left: mmToTwip(pageSettings.marginLeftMm),
+            left: mmToTwip(pageSettings.marginHorizontalMm),
             header: 0,
             footer: 0,
             gutter: 0
@@ -145,7 +145,7 @@ export async function createDocxBytes(
   });
 
   const document = new Document({
-    creator: '批量席卡生成器',
+    creator: '席卡生成 - Whyu',
     title: '批量席卡',
     description: '由批量席卡生成器创建的可打印席卡',
     sections

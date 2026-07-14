@@ -32,7 +32,10 @@ function outputContext() {
   };
 }
 
-async function runExclusiveTask(task: Exclude<BusyTask, null>, action: () => Promise<void>) {
+async function runExclusiveTask(
+  task: Exclude<BusyTask, null>,
+  action: () => void | Promise<void>
+) {
   const store = useProjectStore.getState();
   if (store.busyTask) return;
   store.setBusyTask(task);
@@ -55,10 +58,10 @@ export function App() {
   const showToast = useProjectStore((state) => state.showToast);
 
   const handlePrint = () =>
-    void runExclusiveTask('print', async () => {
+    void runExclusiveTask('print', () => {
       const context = outputContext();
       const scenes = createScenesForPeople(context.people, context.textStyle, context.pageSettings);
-      await printScenes(scenes, context.pageSettings);
+      void printScenes(scenes, context.pageSettings);
       useProjectStore
         .getState()
         .showToast({ kind: 'success', message: `已准备 ${scenes.length} 张席卡用于打印。` });

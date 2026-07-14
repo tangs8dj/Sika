@@ -45,7 +45,24 @@ function parseTextStyle(value: unknown): TextStyle {
 
 function parsePageSettings(value: unknown): PageSettings {
   if (!isRecord(value)) return DEFAULT_PAGE_SETTINGS;
-  const candidate = { ...DEFAULT_PAGE_SETTINGS, ...value };
+  const legacyLeftMargin = value.marginLeftMm;
+  const legacyRightMargin = value.marginRightMm;
+  const legacyHorizontalMargin =
+    typeof legacyLeftMargin === 'number' &&
+    Number.isFinite(legacyLeftMargin) &&
+    typeof legacyRightMargin === 'number' &&
+    Number.isFinite(legacyRightMargin)
+      ? (legacyLeftMargin + legacyRightMargin) / 2
+      : DEFAULT_PAGE_SETTINGS.marginHorizontalMm;
+  const candidate = {
+    ...DEFAULT_PAGE_SETTINGS,
+    ...value,
+    marginHorizontalMm:
+      typeof value.marginHorizontalMm === 'number' && Number.isFinite(value.marginHorizontalMm)
+        ? value.marginHorizontalMm
+        : legacyHorizontalMargin,
+    previewZoomMode: value.previewZoomMode === 'manual' ? 'manual' : 'fit'
+  };
   return validatePageSettings(candidate).length === 0 ? candidate : DEFAULT_PAGE_SETTINGS;
 }
 

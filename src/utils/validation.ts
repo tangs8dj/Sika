@@ -36,16 +36,20 @@ export function validatePageSettings(settings: PageSettings): string[] {
   if (settings.widthMm <= 0 || settings.heightMm <= 0) {
     errors.push('纸张宽度和高度必须大于 0。');
   }
-  const horizontalMargins = settings.marginLeftMm + settings.marginRightMm;
+  const horizontalMargins = settings.marginHorizontalMm * 2;
   const verticalMargins = settings.marginTopMm + settings.marginBottomMm;
   if (horizontalMargins >= settings.widthMm) {
-    errors.push('左右页边距之和必须小于纸张宽度。');
+    errors.push('左右页边距必须小于纸张宽度的一半。');
   }
   if (verticalMargins >= settings.heightMm) {
     errors.push('上下页边距之和必须小于纸张高度。');
   }
-  if (settings.layoutMode === 'folded' && verticalMargins >= settings.heightMm / 2) {
-    errors.push('折叠席卡的上下页边距过大，姓名区域没有可用高度。');
+  if (
+    settings.layoutMode === 'folded' &&
+    (settings.marginTopMm >= settings.heightMm / 2 - 3 ||
+      settings.marginBottomMm >= settings.heightMm / 2 - 3)
+  ) {
+    errors.push('折叠席卡的上、下边距必须分别小于半页高度，并保留折线安全留白。');
   }
   if (!isValidHexColor(settings.backgroundColor)) {
     errors.push('背景颜色必须是 #RRGGBB 格式。');

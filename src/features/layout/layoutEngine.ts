@@ -1,5 +1,6 @@
 import type { Person } from '../names/nameTypes';
 import { fitTextToBox, type TextMeasurer } from './autoFitText';
+import { ptToMm } from '../../utils/units';
 import type {
   LayoutBox,
   LayoutScene,
@@ -57,6 +58,12 @@ function createTextNode(
   };
 }
 
+function alignTextToEdge(node: TextNode, edge: 'top' | 'bottom'): TextNode {
+  const textHeightMm = ptToMm(node.fontSizePt) * node.lineHeight * node.lines.length;
+  const yMm = edge === 'top' ? node.yMm : node.yMm + node.heightMm - textHeightMm;
+  return { ...node, yMm, heightMm: textHeightMm };
+}
+
 function createSafeArea(id: string, box: LayoutBox): RectangleNode {
   return {
     id,
@@ -93,7 +100,7 @@ export function createPlaceCardScene(
   const warnings: string[] = [];
   const contentWidth = Math.max(
     1,
-    settings.widthMm - settings.marginLeftMm - settings.marginRightMm
+    settings.widthMm - settings.marginHorizontalMm * 2
   );
 
   if (settings.showBorder) {
@@ -114,31 +121,38 @@ export function createPlaceCardScene(
     const foldY = settings.heightMm / 2;
     const foldPadding = 3;
     const topBox: LayoutBox = {
-      xMm: settings.marginLeftMm,
+      xMm: settings.marginHorizontalMm,
       yMm: settings.marginTopMm,
       widthMm: contentWidth,
       heightMm: Math.max(1, foldY - settings.marginTopMm - foldPadding)
     };
     const bottomBox: LayoutBox = {
-      xMm: settings.marginLeftMm,
+      xMm: settings.marginHorizontalMm,
       yMm: foldY + foldPadding,
       widthMm: contentWidth,
-      heightMm: Math.max(1, settings.heightMm - settings.marginBottomMm - foldY - foldPadding)
+      heightMm: Math.max(1, foldY - settings.marginBottomMm - foldPadding)
     };
 
-    const upper = createTextNode('name-upper', name, topBox, 180, style, options.measurer);
-    const lower = createTextNode('name-lower', name, bottomBox, 0, style, options.measurer);
+    const upper = alignTextToEdge(
+      createTextNode('name-upper', name, topBox, 180, style, options.measurer),
+      'top'
+    );
+    const lower = alignTextToEdge(
+      createTextNode('name-lower', name, bottomBox, 0, style, options.measurer),
+      'bottom'
+    );
     nodes.push(upper, lower);
 
     if (upper.overflow || lower.overflow) {
       warnings.push(`“${name}”在最小字号下仍可能超出可用区域。`);
     }
 
-    if (settings.showFoldLine) {
+    if (settings.showFoldLine || settings.printFoldLine) {
       nodes.push({
         id: 'fold-line',
         type: 'line',
         printable: settings.printFoldLine,
+        previewable: settings.showFoldLine,
         x1Mm: 0,
         y1Mm: foldY,
         x2Mm: settings.widthMm,
@@ -157,7 +171,7 @@ export function createPlaceCardScene(
     }
   } else {
     const box: LayoutBox = {
-      xMm: settings.marginLeftMm,
+      xMm: settings.marginHorizontalMm,
       yMm: settings.marginTopMm,
       widthMm: contentWidth,
       heightMm: Math.max(1, settings.heightMm - settings.marginTopMm - settings.marginBottomMm)

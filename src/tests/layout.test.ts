@@ -1,7 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import { fitTextToBox, type TextMeasurer } from '../features/layout/autoFitText';
 import { createPlaceCardScene } from '../features/layout/layoutEngine';
+import { renderSceneToSvg } from '../features/export/svgRenderer';
 import {
+  applyOrientation,
   DEFAULT_PAGE_SETTINGS,
   DEFAULT_TEXT_STYLE,
   getOrientedDimensions
@@ -15,6 +17,15 @@ describe('纸张和席卡排版', () => {
     expect(getOrientedDimensions('A4', 'landscape')).toEqual({ widthMm: 297, heightMm: 210 });
   });
 
+  it('切换纸张方向后恢复适应窗口缩放', () => {
+    const settings = applyOrientation(
+      { ...DEFAULT_PAGE_SETTINGS, previewZoomMode: 'manual', previewZoom: 1.2 },
+      'portrait'
+    );
+    expect(settings.previewZoomMode).toBe('fit');
+    expect(settings).toMatchObject({ widthMm: 210, heightMm: 297 });
+  });
+
   it('折叠双面生成上下两个姓名，上半部分旋转 180 度', () => {
     const scene = createPlaceCardScene('张伟', DEFAULT_TEXT_STYLE, DEFAULT_PAGE_SETTINGS, {
       measurer: deterministicMeasurer
@@ -25,6 +36,54 @@ describe('纸张和席卡排版', () => {
     expect(texts[1]?.rotationDeg).toBe(0);
     const foldLine = scene.nodes.find((node) => node.id === 'fold-line');
     expect(foldLine?.printable).toBe(false);
+  });
+
+  it('折叠双面的上、下边距分别作用于各自半页的外侧纸边', () => {
+    const scene = createPlaceCardScene(
+      '张伟',
+      DEFAULT_TEXT_STYLE,
+      { ...DEFAULT_PAGE_SETTINGS, marginTopMm: 10, marginBottomMm: 14 },
+      { measurer: deterministicMeasurer }
+    );
+    const texts = scene.nodes.filter((node): node is TextNode => node.type === 'text');
+    const upper = texts[0];
+    const lower = texts[1];
+
+    expect(upper?.yMm).toBe(10);
+    expect(upper?.heightMm).toBeCloseTo(49.107, 3);
+    expect(lower?.yMm).toBeCloseTo(146.893, 3);
+  });
+
+  it('折叠双面的零上、下边距使文本贴合外侧纸边', () => {
+    const scene = createPlaceCardScene(
+      '张伟',
+      DEFAULT_TEXT_STYLE,
+      { ...DEFAULT_PAGE_SETTINGS, marginTopMm: 0, marginBottomMm: 0 },
+      { measurer: deterministicMeasurer }
+    );
+    const texts = scene.nodes.filter((node): node is TextNode => node.type === 'text');
+    const upper = texts[0];
+    const lower = texts[1];
+
+    expect(upper?.yMm).toBe(0);
+    expect((lower?.yMm ?? 0) + (lower?.heightMm ?? 0)).toBeCloseTo(
+      DEFAULT_PAGE_SETTINGS.heightMm,
+      3
+    );
+  });
+
+  it('预览和打印折叠线设置彼此独立', () => {
+    const scene = createPlaceCardScene('张伟', DEFAULT_TEXT_STYLE, {
+      ...DEFAULT_PAGE_SETTINGS,
+      showFoldLine: false,
+      printFoldLine: true
+    });
+    const foldLine = scene.nodes.find((node) => node.id === 'fold-line');
+
+    expect(foldLine?.printable).toBe(true);
+    expect(foldLine?.previewable).toBe(false);
+    expect(renderSceneToSvg(scene, { includeGuides: true })).not.toContain('fold-line');
+    expect(renderSceneToSvg(scene)).toContain('fold-line');
   });
 
   it('平面单面模式只生成一个正常方向姓名', () => {
@@ -75,5 +134,21 @@ describe('长姓名自动适配', () => {
     expect(result.lines).toHaveLength(2);
     expect(result.lines.join(' ')).toContain('Alexander');
     expect(result.overflow).toBe(false);
+  });
+});
+
+describe('文本框对齐', () => {
+  it('分散对齐会让多字符文本铺满文本框宽度', () => {
+    const scene = createPlaceCardScene(
+      '张伟',
+      { ...DEFAULT_TEXT_STYLE, horizontalAlign: 'justify' },
+      DEFAULT_PAGE_SETTINGS,
+      { measurer: deterministicMeasurer }
+    );
+
+    const svg = renderSceneToSvg(scene);
+    expect(svg).not.toContain('textLength=')
+    expect(svg).not.toContain('lengthAdjust=')
+    expect(svg.match(/<tspan/gmu)).toHaveLength(4)
   });
 });
